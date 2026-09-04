@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Exo 2', sans-serif;
+  --font-heading: 'Exo 2', sans-serif;
+}
+
 @keyframes titleRise {
   0% {
     opacity: 0;
@@ -54,7 +59,7 @@
   --accent-rose: #C98282;
   --accent-rose-glow: rgba(201, 130, 130, 0.25);
 
-  --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Exo 2', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --radius-sm: 6px;
@@ -939,4 +944,14 @@ pre.code-view {
   color: var(--accent-rose);
   background: rgba(201, 130, 130, 0.12);
   display: block;
+}
+
+
+/* Global Exo 2 Font Application */
+body, html, input, button, select, textarea {
+  font-family: 'Exo 2', sans-serif;
+}
+
+.font-exo {
+  font-family: 'Exo 2', sans-serif;
 }
