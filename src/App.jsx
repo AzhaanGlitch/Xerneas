@@ -30,11 +30,49 @@ import { INITIAL_INCIDENTS, INITIAL_AUDIT_LOGS } from './data/mockIncidents';
 
 export default function App() {
   const [theme, setTheme] = useState('charcoal'); // 'charcoal' | 'canvas'
-  const [activeTab, setActiveTab] = useState('landing'); // 'landing' | 'telemetry' | 'langgraph' | 'sandbox' | 'runbooks' | 'postmortem' | 'architecture'
+
+  // URL routing sync: '/' -> landing, '/dashboard' -> dashboard/telemetry
+  const getInitialRouteState = () => {
+    const path = window.location.pathname.toLowerCase();
+    if (path.startsWith('/dashboard')) {
+      return 'telemetry';
+    }
+    return 'landing';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialRouteState); // 'landing' | 'telemetry' | 'langgraph' | 'sandbox' | 'runbooks' | 'postmortem' | 'architecture'
   const [mode, setMode] = useState('AUTONOMOUS'); // 'SAFE' | 'AUTONOMOUS'
   const [isChaosModalOpen, setIsChaosModalOpen] = useState(false);
   const [incidents, setIncidents] = useState(INITIAL_INCIDENTS);
   const [activeIncident, setActiveIncident] = useState(null);
+
+  // Sync state when browser back/forward buttons are pressed
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path.startsWith('/dashboard')) {
+        setActiveTab(prev => (prev === 'landing' ? 'telemetry' : prev));
+      } else {
+        setActiveTab('landing');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Sync browser URL whenever activeTab changes
+  const navigateToTab = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'landing') {
+      if (window.location.pathname !== '/') {
+        window.history.pushState(null, '', '/');
+      }
+    } else {
+      if (!window.location.pathname.toLowerCase().startsWith('/dashboard')) {
+        window.history.pushState(null, '', '/dashboard');
+      }
+    }
+  };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -321,12 +359,7 @@ export default function App() {
     <div className="app-container">
       {activeTab === 'landing' ? (
         <SentinelLanding
-          onEnterCockpit={() => setActiveTab('telemetry')}
-          currentMetrics={currentMetrics}
-          anomalyResult={anomalyResult}
-          mode={mode}
-          setMode={setMode}
-          kpis={kpis}
+          onEnterCockpit={() => navigateToTab('telemetry')}
         />
       ) : (
         <>
@@ -346,7 +379,7 @@ export default function App() {
           <nav className="nav-bar">
             <button 
               className={`nav-tab ${activeTab === 'landing' ? 'active' : ''}`}
-              onClick={() => setActiveTab('landing')}
+              onClick={() => navigateToTab('landing')}
             >
               <Compass size={16} />
               Sentinel Landing
@@ -354,7 +387,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'telemetry' ? 'active' : ''}`}
-              onClick={() => setActiveTab('telemetry')}
+              onClick={() => navigateToTab('telemetry')}
             >
               <Activity size={16} />
               Live SRE Cockpit
@@ -367,7 +400,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'langgraph' ? 'active' : ''}`}
-              onClick={() => setActiveTab('langgraph')}
+              onClick={() => navigateToTab('langgraph')}
             >
               <GitBranch size={16} />
               LangGraph State Machine
@@ -380,7 +413,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'sandbox' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sandbox')}
+              onClick={() => navigateToTab('sandbox')}
             >
               <Terminal size={16} />
               Docker Sandbox &amp; AST Guardrail
@@ -388,7 +421,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'runbooks' ? 'active' : ''}`}
-              onClick={() => setActiveTab('runbooks')}
+              onClick={() => navigateToTab('runbooks')}
             >
               <Database size={16} />
               Qdrant Vector DB &amp; RAG
@@ -396,7 +429,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'postmortem' ? 'active' : ''}`}
-              onClick={() => setActiveTab('postmortem')}
+              onClick={() => navigateToTab('postmortem')}
             >
               <FileText size={16} />
               Post-Mortems &amp; Governance
@@ -404,7 +437,7 @@ export default function App() {
 
             <button 
               className={`nav-tab ${activeTab === 'architecture' ? 'active' : ''}`}
-              onClick={() => setActiveTab('architecture')}
+              onClick={() => navigateToTab('architecture')}
             >
               <Network size={16} />
               Distributed Topology Blueprint
